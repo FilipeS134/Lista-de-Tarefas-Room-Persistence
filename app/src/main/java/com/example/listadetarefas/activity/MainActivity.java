@@ -67,23 +67,22 @@ public class MainActivity extends AppCompatActivity {
                                 View mMiew = getLayoutInflater().inflate(R.layout.activity_add_tarefa, null);
                                 final EditText nomeTarefa = mMiew.findViewById(R.id.textTarefa);
                                 nomeTarefa.setText(tarefaSelecionada.getNomeTarefa());
-                                dialog.setTitle("Atualizar Tarefa");
+                                dialog.setTitle("Deseja Atualizar Tarefa?");
 
                                 dialog.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        if (nomeTarefa != null) {
+                                        if (nomeTarefa.getText().toString() != null && !nomeTarefa.getText().toString().isEmpty() ) {
 
                                             Tarefa tarefa = new Tarefa();
                                             tarefa.setNomeTarefa(nomeTarefa.getText().toString());
                                             tarefa.setId(tarefaSelecionada.getId());
                                             db.tarefaDAO().atualizar(tarefa);
-                                            tarefaList.clear();
                                             carregarTarefas();
                                             Toast.makeText(getApplicationContext(), "Sucesso ao alterar tarefa!", Toast.LENGTH_SHORT).show();
 
                                         }else {
-                                            Toast.makeText(getApplicationContext(), "Erro ao excluir tarefa!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getApplicationContext(), "Erro ao alterar tarefa!", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
@@ -109,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                                 if (tarefaSelecionada != null) {
                                                     db.tarefaDAO().deletar(tarefaSelecionada);
-                                                    tarefaList.clear();
                                                     carregarTarefas();
                                                     Toast.makeText(getApplicationContext(), "Sucesso ao excluir tarefa!", Toast.LENGTH_SHORT).show();
 
@@ -140,20 +138,19 @@ public class MainActivity extends AppCompatActivity {
                 final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
                 View mMiew = getLayoutInflater().inflate(R.layout.activity_add_tarefa, null);
                 final EditText nomeTarefa = mMiew.findViewById(R.id.textTarefa);
-                dialog.setTitle("Salvar Tarefa");
+                dialog.setTitle("Deseja Salvar Tarefa");
 
                 dialog.setPositiveButton("Sim", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (nomeTarefa != null) {
+                        if (nomeTarefa.getText().toString() != null && !nomeTarefa.getText().toString().isEmpty()) {
                             Tarefa tarefa = new Tarefa(nomeTarefa.getText().toString());
                             db.tarefaDAO().salvar(tarefa);
-                            tarefaList.clear();
                             carregarTarefas();
                             Toast.makeText(getApplicationContext(), "Sucesso ao salvar tarefa!", Toast.LENGTH_SHORT).show();
 
                         }else {
-                            Toast.makeText(getApplicationContext(), "Erro ao excluir tarefa!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "Erro ao salvar tarefa!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -205,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void carregarTarefas(){
+        tarefaList.clear();
         tarefaList.addAll(db.tarefaDAO().lisTarefas());
 
         tarefaAdpter = new TarefaAdpter(tarefaList);
@@ -216,9 +214,4 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(tarefaAdpter);
     }
 
-    @Override
-    protected void onStop() {
-        tarefaList.clear();
-        super.onStop();
-    }
 }
