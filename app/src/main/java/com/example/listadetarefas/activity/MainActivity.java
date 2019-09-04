@@ -216,4 +216,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(tarefaAdpter);
     }
 
+    @Override
+    protected void onStop() {
+        tarefaList.clear();
+        super.onStop();
+    }
 }
