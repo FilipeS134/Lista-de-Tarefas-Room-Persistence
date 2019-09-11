@@ -59,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        usuario = new Usuario();
-        usuario.salvarViaGoogle(this);
+
 
         recyclerView = findViewById(R.id.recyclerView);
         db = Room.databaseBuilder(getApplicationContext(), DbHelperRoomPersistence.class, "MeuDB").allowMainThreadQueries().build();
@@ -209,19 +208,22 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.sair) {
-            autenticacao = ConfiguracaoFirebase.getAutenticacao();
-            if (autenticacao.getCurrentUser() != null){
-                autenticacao.signOut();
-                finish();
-                return true;
-            }
-                signOut();
-                return true;
-
+        switch (item.getItemId()) {
+            case R.id.sair:
+                autenticacao = ConfiguracaoFirebase.getAutenticacao();
+                if (autenticacao.getCurrentUser() != null){
+                    autenticacao.signOut();
+                    finish();
+                    break;
+                }
+                    signOut();
+                    break;
+            case R.id.user:
+                startActivity(new Intent(this, UsuarioActivity.class));
+                break;
         }
 
         return super.onOptionsItemSelected(item);

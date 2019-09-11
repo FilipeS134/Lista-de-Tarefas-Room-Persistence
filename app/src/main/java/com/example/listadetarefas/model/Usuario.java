@@ -1,10 +1,6 @@
 package com.example.listadetarefas.model;
 
-import android.content.Context;
 
-import com.example.listadetarefas.config.ConfiguracaoFirebase;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
 public class Usuario {
     private String id;
@@ -21,14 +17,6 @@ public class Usuario {
         this.senha = senha;
     }
 
-    public void salvarViaGoogle(Context context){
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
-        if (account != null){
-            nome = account.getDisplayName();
-            email = account.getEmail();
-            id = account.getId();
-        }
-    }
 
     public String getNome() {
         return nome;
