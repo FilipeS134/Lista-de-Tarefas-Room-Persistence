@@ -1,18 +1,27 @@
 package com.example.listadetarefas.activity;
 
-import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.listadetarefas.R;
 import com.example.listadetarefas.adpter.TarefaAdpter;
+import com.example.listadetarefas.config.ConfiguracaoFirebase;
 import com.example.listadetarefas.helper.DbHelperRoomPersistence;
 import com.example.listadetarefas.helper.RecyclerItemClickListener;
-import com.example.listadetarefas.helper.TarefaDAO;
 import com.example.listadetarefas.model.Tarefa;
+import com.example.listadetarefas.model.Usuario;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -39,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private List<Tarefa> tarefaList = new ArrayList<>();
     private Tarefa tarefaSelecionada;
     public DbHelperRoomPersistence db;
+    private FirebaseAuth autenticacao;
+    private Usuario usuario;
+    GoogleSignInClient googleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,9 +59,16 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        usuario = new Usuario();
+        usuario.salvarViaGoogle(this);
+
         recyclerView = findViewById(R.id.recyclerView);
         db = Room.databaseBuilder(getApplicationContext(), DbHelperRoomPersistence.class, "MeuDB").allowMainThreadQueries().build();
 
+        GoogleSignInOptions glogin = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+        googleSignInClient = GoogleSignIn.getClient(this, glogin);
 
 
         // add evento d eclique
@@ -63,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
                                 final Tarefa tarefaSelecionada = tarefaList.get(position);
 
                                 final AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-                                View mMiew = getLayoutInflater().inflate(R.layout.activity_add_tarefa, null);
-                                final EditText nomeTarefa = mMiew.findViewById(R.id.textTarefa);
+                                View mView = getLayoutInflater().inflate(R.layout.activity_add_tarefa, null);
+                                final EditText nomeTarefa = mView.findViewById(R.id.textTarefa);
                                 nomeTarefa.setText(tarefaSelecionada.getNomeTarefa());
                                 dialog.setTitle("Deseja Atualizar Tarefa?");
 
@@ -81,13 +100,14 @@ public class MainActivity extends AppCompatActivity {
                                             Toast.makeText(getApplicationContext(), "Sucesso ao alterar tarefa!", Toast.LENGTH_SHORT).show();
 
                                         }else {
-                                            Toast.makeText(getApplicationContext(), "Erro ao alterar tarefa!", Toast.LENGTH_SHORT).show();
+                                            Toast.makeText(getApplicationContext(), "O campo está vazio, Por favor digite algo!", Toast.LENGTH_SHORT).show();
+                                            return;
                                         }
                                     }
                                 });
 
                                 dialog.setNegativeButton("Não", null);
-                                dialog.setView(mMiew);
+                                dialog.setView(mView);
                                 dialog.create();
                                 dialog.show();
                             }
@@ -149,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Sucesso ao salvar tarefa!", Toast.LENGTH_SHORT).show();
 
                         }else {
-                            Toast.makeText(getApplicationContext(), "Erro ao salvar tarefa!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getApplicationContext(), "O campo está vazio, Por favor digite algo!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -192,12 +212,30 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.sair) {
+            autenticacao = ConfiguracaoFirebase.getAutenticacao();
+            if (autenticacao.getCurrentUser() != null){
+                autenticacao.signOut();
+                finish();
+                return true;
+            }
+                signOut();
+                return true;
+
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    private void signOut(){
+            googleSignInClient.signOut().addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    finish();
+                }
+            });
+    }
+
 
 
     public void carregarTarefas(){
